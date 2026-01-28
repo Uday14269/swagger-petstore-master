@@ -244,6 +244,14 @@ public class PetController {
                 .contentType(Util.getMediaType(request))
                 .entity(petByTags);
     }
+    /**
+ * Test endpoint to verify controller is working.
+ */
+public ResponseContext testEndpoint(final RequestContext request) {
+    return new ResponseContext()
+            .contentType(Util.getMediaType(request))
+            .entity("Test endpoint working successfully!");
+}
     
 }
 
