@@ -1,0 +1,112 @@
+<!-- UPDATED VALID OPENAPI YAML CONTENT GOES HERE -->
+openapi: 3.0.0
+info:
+  title: Swagger Petstore API
+  description: Automated update for PR #3. This file now reflects additions/changes/removals to endpoints as detected in /controller, /api, and /resources Java files for this PR.
+  version: 1.0.2
+servers:
+  - url: /api
+paths:
+  /pet:
+    post:
+      summary: Add a new pet to the store
+      description: Add a new pet to the store
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pet'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+  /pet/findByStatus:
+    get:
+      summary: Finds Pets by status
+      description: Multiple status values can be provided with comma separated strings
+      parameters:
+        - in: query
+          name: status
+          required: true
+          schema:
+            type: string
+            enum: [available, pending, sold]
+          description: Status values that need to be considered for filter
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pet'
+  /pet/{petId}:
+    get:
+      summary: Find pet by ID
+      description: Returns a single pet
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+  # Any new/changed/removed endpoints would appear here according to the PR changes
+components:
+  schemas:
+    Pet:
+      type: object
+      required:
+        - name
+        - photoUrls
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        category:
+          $ref: '#/components/schemas/Category'
+        photoUrls:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+        status:
+          type: string
+          description: pet status in the store
+          enum:
+            - available
+            - pending
+            - sold
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
