@@ -30,6 +30,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaInflectorServerCodegen", date = "2017-04-08T15:48:56.501Z")
 public class PetController {
@@ -225,7 +227,7 @@ public class PetController {
     }
 
     public ResponseContext updatePet(final RequestContext request, final Long id, final String name, final Category category,
-                                  final List<String> urls, final List<Tag> tags, final String status) {
+                                     final List<String> urls, final List<Tag> tags, final String status) {
         final Pet pet = PetData.createPet(id, category, name, urls, tags, status);
         return updatePet(request, pet);
     }
@@ -244,6 +246,53 @@ public class PetController {
                 .contentType(Util.getMediaType(request))
                 .entity(petByTags);
     }
-    
-}
 
+    /**
+     * Test endpoint to verify controller is working.
+     */
+    public ResponseContext testEndpoint(final RequestContext request) {
+        return new ResponseContext()
+                .contentType(Util.getMediaType(request))
+                .entity("Test endpoint working successfully!");
+    }
+
+    /**
+     * Additional testing endpoint: returns health information for quick verification.
+     * Payload example:
+     * {
+     *   "status": "ok",
+     *   "totalPets": 5,
+     *   "timestamp": 1700000000000
+     * }
+     */
+    public ResponseContext healthCheck(final RequestContext request) {
+        final MediaType outputType = Util.getMediaType(request);
+
+        // Build a simple map as the response body
+        Map<String, Object> result = new HashMap<>();
+        result.put("status", "ok");
+        // PetData doesn't expose size directly; count from current in-memory store via a safe call
+        // Using findPetByStatus across known statuses could miss some; instead, try to read all via a helper if available.
+        // If not available, we can approximate by counting IDs known through a benign call.
+        // Here, we use a simple defensive approach:
+        int total = 0;
+        try {
+            // PetData typically has a method to list all pets in Swagger samples; if not, using statuses is a fallback.
+            // Attempt to use the existing search paths conservatively.
+            List<Pet> available = petData.findPetByStatus("available");
+            List<Pet> pending = petData.findPetByStatus("pending");
+            List<Pet> sold = petData.findPetByStatus("sold");
+            total += (available != null) ? available.size() : 0;
+            total += (pending != null) ? pending.size() : 0;
+            total += (sold != null) ? sold.size() : 0;
+        } catch (Exception e) {
+            notifier.notify(new RuntimeException("Health check counting failed"));
+        }
+        result.put("totalPets", total);
+        result.put("timestamp", System.currentTimeMillis());
+
+        return new ResponseContext()
+                .contentType(outputType)
+                .entity(result);
+    }
+}
